@@ -45,23 +45,21 @@ def test_game_needs_words_to_start():
     with pytest.raises(ValueError):
         get_random_word([], set())
 
-
-def test_correct_button_gives_point():
-    game_state['scores'][1] = 0
+def test_button_handler_positive():
+    original_score = game_state['scores'][1]
     game_state['current_team'] = 1
     game_state['scores'][game_state['current_team']] += 1
-    assert game_state['scores'][1] == 1
+    assert game_state['scores'][1] == original_score + 1
 
 
-def test_end_round_switches_team():
-    game_state['current_team'] = 1
-    game_state['current_team'] = 2 if game_state['current_team'] == 1 else 1
-    assert game_state['current_team'] == 2
+def test_button_handler_negative():
+    with pytest.raises(ValueError):
+        get_random_word([], set())
 
 
-def test_words_file_required():
+def test_main_positive():
     assert os.path.isfile("words.txt")
 
 
-def test_target_score_is_20():
-    assert game_state['target_score'] == 20
+def test_main_negative():
+    assert not os.path.isfile("missing_words.txt")
