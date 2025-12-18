@@ -1,4 +1,3 @@
-import asyncio
 import random
 import argparse
 import os
@@ -10,8 +9,7 @@ from telegram.ext import (
     ContextTypes,
 )
 
-
-# === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ СОСТОЯНИЯ ===
+# глобальные переменные состояния
 game_state = {
     'current_team': 1,
     'scores': {1: 0, 2: 0},
@@ -83,7 +81,7 @@ async def start_game(update, context):
 
     global game_state
 
-    # Сброс состояния
+    # сброс состояния
     game_state = {
         'current_team': 1,
         'scores': {1: 0, 2: 0},
@@ -92,7 +90,7 @@ async def start_game(update, context):
         'target_score': 20,
     }
 
-    # Загрузка слов
+    # загрузка слов
     words_path = context.bot_data.get('words_path', 'words.txt')
     try:
         game_state['word_list'] = load_words(words_path)
@@ -100,11 +98,9 @@ async def start_game(update, context):
         await update.message.reply_text(f"Ошибка загрузки слов: {e}")
         return
 
-    # Показ первого слова
+    # показ первого слова
     try:
-        game_state['current_word'] = get_random_word(
-            game_state['word_list'], game_state['used_words']
-        )
+        game_state['current_word'] = get_random_word(game_state['word_list'], game_state['used_words'])
         game_state['used_words'].add(game_state['current_word'])
     except ValueError as e:
         await update.message.reply_text(f"Ошибка: {e}")
@@ -164,11 +160,9 @@ async def button_handler(update, context):
         elif query.data == 'end_round':
             game_state['current_team'] = 2 if game_state['current_team'] == 1 else 1
 
-        # Новое слово
+        # новое слово
         try:
-            game_state['current_word'] = get_random_word(
-                game_state['word_list'], game_state['used_words']
-            )
+            game_state['current_word'] = get_random_word(game_state['word_list'], game_state['used_words'])
             game_state['used_words'].add(game_state['current_word'])
         except ValueError:
             await query.edit_message_text(
@@ -178,7 +172,7 @@ async def button_handler(update, context):
             )
             return
 
-        # Обновляем сообщение
+        # обновляем сообщение
         keyboard = [
             [
                 InlineKeyboardButton("✅ Отгадал", callback_data='correct'),
@@ -217,17 +211,17 @@ def main():
         print(f"Ошибка: файл со словами не найден: {args.words}")
         return
 
-    # Создаём приложение
+    # создаём приложение
     application = Application.builder().token(args.token).build()
 
-    # Сохраняем путь к словам
+    # сохраняем путь к словам
     application.bot_data['words_path'] = args.words
 
-    # Регистрация обработчиков
+    # регистрация обработчиков
     application.add_handler(CommandHandler("start", start_game))
     application.add_handler(CallbackQueryHandler(button_handler))
 
-    # Запуск
+    # запуск
     print("Бот запущен. Нажмите Ctrl+C для остановки.")
     application.run_polling()
 
